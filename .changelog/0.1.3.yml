@@ -2,3 +2,4 @@ changes:
 - type: feature
   component: general
   description: implement better detection for module name to be passed to flit
+release_date: '2022-01-22'
