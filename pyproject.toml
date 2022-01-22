@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "poetry-link"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "Editable installs for packages developed with Poetry using Flit."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
+readme = "readme.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
