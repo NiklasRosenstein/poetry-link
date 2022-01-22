@@ -6,6 +6,7 @@ from pathlib  import Path
 
 from cleo.io.outputs.output import Verbosity
 from flit.install import Installer
+from nr.util.algorithm import longest_common_substring
 from nr.util.fs import atomic_swap
 from poetry.console.application import Application
 from poetry.console.commands.command import Command
@@ -14,6 +15,34 @@ from setuptools import find_namespace_packages
 
 if t.TYPE_CHECKING:
   from tomlkit.toml_document import TOMLDocument
+
+
+def pick_modules_with_init_py(directory: Path, modules: list[str]) -> list[str]:
+  def _filter(module: str) -> bool:
+    return (directory / module.replace('.', '/') / '__init__.py').is_file()
+  return list(filter(_filter, modules))
+
+
+def identify_flit_module(directory: Path) -> str:
+  """ Identifies the name of the module that is contained in *directory*. This uses #find_namespace_packages()
+  and then tries to identify the one main module name that should be passed to the `tool.flit.metadata.module`
+  option. """
+
+  modules = find_namespace_packages(directory)
+  if not modules:
+    raise ValueError(f'no modules discovered in {directory}')
+
+  if len(modules) > 1:
+    modules = pick_modules_with_init_py(directory, modules)
+
+  if len(modules) > 1:
+    # If we stil have multiple modules, we try to find the longest common path.
+    common = longest_common_substring(*(x.split('.') for x in modules), start_only=True)
+    if not common:
+      raise ValueError(f'no common root package modules: {modules}')
+    return '.'.join(common)
+
+  return modules[0]
 
 
 class PoetryLinkCommand(Command):
@@ -59,7 +88,8 @@ class PoetryLinkCommand(Command):
 
   def handle(self) -> int:
     logging.basicConfig(level=logging.INFO, format='%(message)s')
-    self.setup_flit_config(self.poetry.pyproject.data)
+    if not self.setup_flit_config(self.poetry.pyproject.data):
+      return 1
     pyproject_file = Path('pyproject.toml')
     with atomic_swap(pyproject_file, 'w', always_revert=True) as fp:
       fp.close()
@@ -67,7 +97,7 @@ class PoetryLinkCommand(Command):
       installer = Installer.from_ini_path(pyproject_file, python='python', symlink=True)
       installer.install()
 
-  def setup_flit_config(self, data: 'TOMLDocument') -> None:
+  def setup_flit_config(self, data: 'TOMLDocument') -> bool:
     """ Copies and transforms some of the Poetry tool configuration to Flit tool configuration in the PyProject
     configuration. """
 
@@ -87,17 +117,20 @@ class PoetryLinkCommand(Command):
 
     # TODO (@NiklasRosenstein): Do we need to support gui-scripts as well?
 
+    module = identify_flit_module(self.get_source_directory())
+
+    flit.add('metadata', {
+      'module': module,
+      'author': poetry['authors'][0]
+    })
+
+    return True
+
+  def get_source_directory(self) -> Path:
     directory = Path.cwd()
     if (src_dir := directory / 'src').is_dir():
       directory = src_dir
-
-    modules = find_namespace_packages(directory)
-    self.line(f'Discovered modules in <fg=cyan>{directory}</fg>: {", ".join(modules)}', None, Verbosity.VERBOSE)
-
-    flit.add('metadata', {
-      'module': modules[0],
-      'author': poetry['authors'][0]
-    })
+    return directory
 
 
 class PoetryLinkPlugin(ApplicationPlugin):

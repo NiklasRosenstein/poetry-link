@@ -7,10 +7,9 @@ readme = "readme.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-flit-core = "^3.2"
 poetry = "^1.2.0a2"
 flit = "^3.6.0"
-"nr.util" = "^0.4.1"
+"nr.util" = "^0.4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
