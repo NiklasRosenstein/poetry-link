@@ -1,0 +1,9 @@
+changes:
+- type: fix
+  component: general
+  description: create `[project]` section instead of `[tool.flit.metadata]`, which
+    allows us to set the `description` field so using `poetry link` does not require
+    the module to have a docstring set in `__init__.py`
+- type: feature
+  component: general
+  description: add `--dump-pyproject` option

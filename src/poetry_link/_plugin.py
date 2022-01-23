@@ -67,7 +67,7 @@ class PoetryLinkCommand(Command):
 
       • copy <fg=cyan>tool.poetry.plugins</fg> -> <b>tool.flit.entrypoints</b>
       • copy <fg=cyan>tool.poetry.scripts</fg> -> <b>tool.flit.scripts</b>
-      • add <b>tool.flit.metadata</b>
+      • add <b>project</b>
         • the <b>module</b> is derived automatically using <fg=cyan>setuptools.find_namespace_packages()</fg> on the
           <b>src/</b> directory, if it exists, or otherwise on the current directory. Note that Flit
           only supports installing one package at a time, so it will be an error if setuptools
@@ -92,6 +92,10 @@ class PoetryLinkCommand(Command):
       description="The Python executable to link the package to.",
       flag=False,
       default="python",
+    ),
+    option(
+      "dump-pyproject",
+      description="Dump the updated pyproject.toml and do not actually do the linking.",
     )
   ]
 
@@ -100,6 +104,11 @@ class PoetryLinkCommand(Command):
     if not self.setup_flit_config(self.poetry.pyproject.data):
       return 1
     pyproject_file = Path('pyproject.toml')
+    if self.option('dump-pyproject'):
+      from tomlkit import dumps
+      print(dumps(self.poetry.pyproject.data))
+      return
+
     with atomic_swap(pyproject_file, 'w', always_revert=True) as fp:
       fp.close()
       self.poetry.pyproject.save()
@@ -116,6 +125,12 @@ class PoetryLinkCommand(Command):
     plugins = poetry.get('plugins', table()).value
     scripts = poetry.get('scripts', table()).value
 
+    if 'project' in data:
+      project = data['project']
+    else:
+      project = table()
+      data.add('project', project)
+
     flit = table()
     data['tool'].add('flit', flit)
 
@@ -127,11 +142,9 @@ class PoetryLinkCommand(Command):
     # TODO (@NiklasRosenstein): Do we need to support gui-scripts as well?
 
     module = identify_flit_module(self.get_source_directory())
-
-    flit.add('metadata', {
-      'module': module,
-      'author': poetry['authors'][0]
-    })
+    project.add('name', module)
+    project.add('version', poetry['version'])
+    project.add('description', '')
 
     return True
 
