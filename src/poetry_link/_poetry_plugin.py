@@ -46,7 +46,7 @@ def identify_flit_module(directory: Path) -> str:
   return modules[0]
 
 
-class PoetryLinkCommand(Command):
+class LinkCommand(Command):
   """
   Poetry natively does not support editable installs (as of writing this on Jan 22, 2022). This
   command makes use of the <fg=green>Flit</fg> backend to leverage its excellent symlink support. Relevant parts of
@@ -131,13 +131,10 @@ class PoetryLinkCommand(Command):
       project = table()
       data.add('project', project)
 
-    flit = table()
-    data['tool'].add('flit', flit)
-
     if plugins:
-      flit.add('entrypoints', plugins)
+      project.add('entry-points', plugins)
     if scripts:
-      flit.add('scripts', scripts)
+      project.add('scripts', scripts)
 
     # TODO (@NiklasRosenstein): Do we need to support gui-scripts as well?
 
@@ -155,7 +152,7 @@ class PoetryLinkCommand(Command):
     return directory
 
 
-class PoetryLinkPlugin(ApplicationPlugin):
+class LinkPlugin(ApplicationPlugin):
 
   def activate(self, application: Application):
-    application.command_loader.register_factory("link", PoetryLinkCommand)
+    application.command_loader.register_factory("link", LinkCommand)
