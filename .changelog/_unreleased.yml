@@ -1,0 +1,13 @@
+changes:
+- type: fix
+  component: general
+  description: resolve "python" command to pass into Flit, otherwise the shebang for
+    generated scripts will include just "python" and that might not always work
+- type: fix
+  component: general
+  description: resolve "python" command to pass into Flit, otherwise the shebang for
+    generated scripts will include just "python" and that might not always work
+- type: fix
+  component: general
+  description: resolve "python" command to pass into Flit, otherwise the shebang for
+    generated scripts will include just "python" and that might not always work

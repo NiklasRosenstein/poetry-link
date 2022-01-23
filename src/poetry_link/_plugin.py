@@ -1,5 +1,6 @@
 
 import logging
+import shutil
 import textwrap
 import typing as t
 from pathlib  import Path
@@ -72,7 +73,7 @@ class PoetryLinkCommand(Command):
           only supports installing one package at a time, so it will be an error if setuptools
           discovers more than one package.
 
-    Then, while the configuration is in an updated state, <fg=cyan>$ flit install -s --python python</fg> is
+    Then, while the configuration is in an updated state, <fg=cyan>$ flit install -s --python `which python`</fg> is
     invoked. This will symlink your package into your currently active Python environment. (Note that right
     now, the plugin does not support auto-detecting the virtual environment automatically created for you by
     Poetry and the environment in which you want to symlink the package to needs to be active).
@@ -94,7 +95,7 @@ class PoetryLinkCommand(Command):
     with atomic_swap(pyproject_file, 'w', always_revert=True) as fp:
       fp.close()
       self.poetry.pyproject.save()
-      installer = Installer.from_ini_path(pyproject_file, python='python', symlink=True)
+      installer = Installer.from_ini_path(pyproject_file, python=shutil.which('python'), symlink=True)
       installer.install()
 
   def setup_flit_config(self, data: 'TOMLDocument') -> bool:
