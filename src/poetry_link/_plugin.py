@@ -5,7 +5,7 @@ import textwrap
 import typing as t
 from pathlib  import Path
 
-from cleo.io.outputs.output import Verbosity
+from cleo.helpers import option
 from flit.install import Installer
 from nr.util.algorithm import longest_common_substring
 from nr.util.fs import atomic_swap
@@ -86,6 +86,14 @@ class PoetryLinkCommand(Command):
   name = "link"
   description = "Install your package in development mode using Flit."
   help = textwrap.dedent(__doc__)
+  options = [
+    option(
+      "python",
+      description="The Python executable to link the package to.",
+      flag=False,
+      default="python",
+    )
+  ]
 
   def handle(self) -> int:
     logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -95,7 +103,7 @@ class PoetryLinkCommand(Command):
     with atomic_swap(pyproject_file, 'w', always_revert=True) as fp:
       fp.close()
       self.poetry.pyproject.save()
-      installer = Installer.from_ini_path(pyproject_file, python=shutil.which('python'), symlink=True)
+      installer = Installer.from_ini_path(pyproject_file, python=shutil.which(self.option("python")), symlink=True)
       installer.install()
 
   def setup_flit_config(self, data: 'TOMLDocument') -> bool:
