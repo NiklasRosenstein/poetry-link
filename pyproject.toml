@@ -8,14 +8,13 @@ readme = "readme.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 poetry = "^1.2.0a2"
-flit = "^3.6.0"
-"nr.util" = "^0.4.3"
+shut = "^1.0.0a1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 
 [tool.poetry.plugins."poetry.application.plugin"]
-link-command = "poetry_link._poetry_plugin:LinkPlugin"
+link-command = "poetry_link:LinkCommandPlugin"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
