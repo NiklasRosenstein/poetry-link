@@ -5,7 +5,7 @@ command makes use of the Flit backend to leverage its excellent symlink support.
 the Poetry configuration will by adpated such that no Flit related configuration needs to be added
 to `pyproject.toml`.
 
-This package depends on [Shut](https://pypi.org/project/shut/) for the `shut link` command and
+This package depends on [Slam](https://pypi.org/project/slam-cli/) for the `slam link` command and
 exposes it as plugin in Poetry.
 
 ### Example usage
